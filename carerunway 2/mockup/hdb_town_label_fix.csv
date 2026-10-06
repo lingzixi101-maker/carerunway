@@ -1,0 +1,9 @@
+row_in_each_year_1based,label_in_source,corrected_town,confidence,evidence_2013_elderly_65plus,expected_2013_elderly_65plus,evidence_2013_age55to64,expected_2013_age55to64
+8,Choa Chu Kang,Woodlands,high,18468,18386,22494,22523
+9,Hougang,Choa Chu Kang,high,8116,8056,14063,14097
+10,Bukit Panjang,Bukit Batok,high,10232,10171,15156,15256
+11,Pasir Ris,Bukit Panjang,high,11008,11135,15028,15195
+12,Bukit Batok,Jurong East,high,9023,9045,11339,11381
+13,Jurong East,Serangoon,high,7305,7300,11775,11782
+14,Serangoon,Bishan,medium (by elimination),8936,,10952,
+15,Bishan,Pasir Ris,high,7502,7475,12655,12674

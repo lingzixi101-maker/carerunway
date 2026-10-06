@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CareRunway: planner dashboard (prototype)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#13232B;--slate:#56666E;--mist:#8A989E;--line:#DDE3E6;--paper:#F1F4F5;--card:#FFFFFF;--soft:#F5F7F8;--lava:#E8321C;--deep:#B9200D;
+  --c26:#B9200D;--c27:#E8321C;--c28:#F2664A;--c29:#F7967E;--c30:#FBC2B2;--c31:#FDE3DA;--later:#C3D0D6;--nd1:#FAFBFB;--nd2:#E9EDEF;--coast:#9AA7AD;
+  --good:#E3ECEF;--bad:#FDE3DA;--genie:#EEF2F4;--bubble:#FFFFFF;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#E8EEF0;--slate:#A8B6BC;--mist:#7D8C92;--line:#2A3A42;--paper:#0F1B21;--card:#16252D;--soft:#1C2D36;
+  --later:#3A4E57;--nd1:#16252D;--nd2:#22343D;--coast:#5E6F77;--good:#24404B;--bad:#4A1E16;--c31:#5A2A20;--c30:#7A3324;--genie:#132028;--bubble:#1C2D36}}
+:root[data-theme="dark"]{--ink:#E8EEF0;--slate:#A8B6BC;--mist:#7D8C92;--line:#2A3A42;--paper:#0F1B21;--card:#16252D;--soft:#1C2D36;
+  --later:#3A4E57;--nd1:#16252D;--nd2:#22343D;--coast:#5E6F77;--good:#24404B;--bad:#4A1E16;--c31:#5A2A20;--c30:#7A3324;--genie:#132028;--bubble:#1C2D36}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:"DM Sans",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;font-variant-numeric:tabular-nums;line-height:1.35;font-size:14px}
+button,select,input{font-family:inherit}
+button:focus-visible,select:focus-visible,input:focus-visible,path:focus-visible{outline:2px solid var(--lava);outline-offset:2px}
+.disc{background:var(--bad);border:2px solid var(--lava);border-radius:12px;margin:14px 22px 0;padding:16px 20px;color:var(--ink)}
+.disc h2{font-size:21px;color:var(--deep);margin-bottom:6px}
+.disc p{font-size:14.5px;margin:4px 0}
+.disc ul{margin:6px 0 6px 20px;font-size:14px}
+.disc li{margin:2px 0}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .disc h2{color:#FF9C88}}
+body.clean .disc{display:none}
+.nav span.nb{opacity:.55}
+/* app bar */
+.appbar{background:var(--card);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:18px;padding:10px 22px}
+.logo{display:flex;align-items:center;gap:8px;font-weight:700;font-size:16px}
+.logo i{width:22px;height:22px;border-radius:6px;background:var(--lava);display:inline-block;position:relative}
+.logo i::after{content:"";position:absolute;left:5px;right:5px;top:10px;height:2.5px;background:#fff;border-radius:2px}
+.nav{display:flex;gap:4px}
+.nav span{font-size:13.5px;color:var(--slate);padding:6px 10px;border-radius:7px}
+.nav span.on{background:var(--soft);color:var(--ink);font-weight:600}
+.bar-r{margin-left:auto;display:flex;align-items:center;gap:12px}
+.proto{font-size:12px;font-weight:600;color:var(--slate);border:1.2px dashed var(--mist);border-radius:6px;padding:3px 8px}
+.who{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--slate)}
+.who b{width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--paper);display:inline-flex;align-items:center;justify-content:center;font-size:11.5px}
+/* layout */
+.page{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:16px;padding:14px 22px 18px;max-width:1520px;margin:0 auto}
+.dash{display:flex;flex-direction:column;gap:12px;min-width:0}
+.filters{display:grid;grid-template-columns:1.2fr 1fr 1.1fr 1.6fr 1.35fr;gap:8px}
+.f{background:var(--card);border:1px solid var(--line);border-radius:9px;padding:6px 12px 7px;min-width:0}
+.f label,.f .lab{display:block;font-size:11.5px;color:var(--mist)}
+select{width:100%;font-weight:600;font-size:14px;color:var(--ink);background:transparent;border:none;padding:2px 0;cursor:pointer}
+select option{color:#13232B}
+.yr{display:flex;align-items:center;gap:10px;margin-top:3px}
+.yr em{font-style:normal;font-size:11px;color:var(--mist)}
+input[type=range]{flex:1;accent-color:var(--ink);min-width:0}
+.yr strong{font-size:15px}
+.f.sw{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.f.sw .val{font-weight:600}
+.tog{width:40px;height:22px;border-radius:11px;background:var(--mist);position:relative;border:none;cursor:pointer;flex:none}
+.tog::after{content:"";position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s}
+.tog[aria-checked="true"]{background:var(--ink)} .tog[aria-checked="true"]::after{left:21px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.k{background:var(--card);border:1px solid var(--line);border-radius:9px;padding:9px 14px}
+.k span{display:block;font-size:12px;color:var(--slate)}
+.k b{font-size:22px;letter-spacing:-.3px}
+.k b.r{color:var(--lava)}
+.k small{font-size:12px;color:var(--mist);margin-left:6px}
+.banner{display:none;font-size:13px;background:var(--bad);color:var(--ink);border-radius:8px;padding:8px 12px}
+.banner.on{display:block}
+.grid2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(320px,1fr);gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px}
+.card h2{font-size:15.5px;font-weight:700}
+.card .sub{font-size:12.5px;color:var(--slate);margin-top:2px}
+.mapcard{padding:12px 14px 10px;position:relative}
+svg.map{display:block;width:100%;height:auto;margin-top:4px}
+svg.map path.a{stroke:var(--card);stroke-width:.7;stroke-linejoin:round;cursor:pointer}
+svg.map path.a.dim{opacity:.25}
+svg.map path.a.sel{stroke:var(--ink);stroke-width:2.2}
+.keys{border-top:1px solid var(--line);padding-top:8px;margin-top:4px;font-size:11.5px;color:var(--slate);display:flex;flex-direction:column;gap:5px}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:5px 10px}
+.row em{font-style:normal;font-weight:600;color:var(--ink)}
+.row span{display:flex;align-items:center;gap:4px}
+.row b{width:13px;height:11px;border-radius:2px;display:inline-block}
+.pin{display:inline-block;width:10px;height:10px;border-radius:50%}
+.def{color:var(--mist)}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--paper);font-size:12px;border-radius:7px;padding:7px 9px;max-width:230px;display:none;z-index:5}
+.tip b{display:block;font-size:13px}
+.sum{font-size:13.5px;color:var(--slate);margin-top:3px}
+.sum b{color:var(--ink)} .sum b.r{color:var(--lava)}
+.hint{font-size:12px;color:var(--mist);margin-top:8px;border-top:1px solid var(--line);padding-top:8px}
+.area{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:8px 18px;align-items:start;margin-top:6px;font-size:12.5px;color:var(--slate)}
+.area h3{font-size:16px;color:var(--ink);margin-bottom:5px}
+.status{display:inline-block;font-size:11.5px;font-weight:700;border-radius:5px;padding:2px 7px}
+.area .lbl{display:block;font-size:11px;color:var(--mist);margin-bottom:2px}
+.area .facts p{margin-bottom:6px;color:var(--ink)}
+.area svg text{font-family:inherit}
+.hrow{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.latec{font-size:12px;font-weight:700;color:var(--deep);background:var(--bad);border-radius:5px;padding:2px 7px;white-space:nowrap}
+.recs tr,.chk tr.r1{cursor:pointer}
+.recs tr:hover td,.chk tr.r1:hover td{background:var(--soft)}
+.recs tr.on td,.chk tr.r1.on td{background:var(--soft)}
+@media (max-width:900px){.area{grid-template-columns:1fr}}
+.side{display:flex;flex-direction:column;gap:12px;min-width:0}
+.rec{padding:12px 16px 12px;border:1.5px solid var(--ink);box-shadow:6px 6px 0 var(--ink);margin-right:6px}
+table{width:100%;border-collapse:collapse}
+.recs td{padding:6px 2px;border-top:1px solid var(--line);vertical-align:top;font-size:13px}
+.recs tr:first-child td{border-top:none}
+.n i{display:inline-block;width:20px;height:20px;border-radius:50%;background:var(--lava);color:#fff;font-style:normal;font-weight:700;font-size:12px;text-align:center;line-height:20px}
+.recs .a b{display:block;font-size:14px} .recs .a small{font-size:11.5px;color:var(--slate)}
+.recs .m{text-align:right} .recs .m b{display:block;font-size:14.5px;white-space:nowrap} .recs .m small{font-size:11px;color:var(--mist)}
+.why{font-size:12px;color:var(--slate);background:var(--soft);border-radius:6px;padding:6px 8px;margin-top:6px}
+.why b{color:var(--ink)}
+.note{font-size:11.5px;color:var(--mist);margin-top:5px}
+.briefrow{display:flex;align-items:center;gap:10px;margin-top:9px}
+.btn{white-space:nowrap;font-weight:700;font-size:12.5px;color:#fff;background:var(--ink);border:none;border-radius:7px;padding:7px 12px;cursor:pointer}
+.mini{width:20px;height:26px;border:1.4px solid var(--mist);border-radius:3px;display:flex;flex-direction:column;gap:3px;padding:4px 3px}
+.mini i{display:block;height:2px;background:var(--line)} .mini i:first-child{background:var(--lava);width:70%}
+.bcap{font-size:11.5px;color:var(--slate)}
+.chk{padding:12px 16px 8px}
+.chk td{padding:5px 3px;border-top:1px solid var(--line);font-size:12.5px}
+.chk .hd td{font-size:11px;color:var(--mist);border-top:none;padding-bottom:2px}
+.chk .r{text-align:right}
+.chip{display:inline-block;font-size:11.5px;font-weight:700;border-radius:5px;padding:2px 7px;white-space:nowrap}
+.c-good{background:var(--good)} .c-bad{background:var(--bad);color:var(--deep)} .c-mid{background:var(--soft);color:var(--slate)}
+.empty{font-size:12.5px;color:var(--slate);padding:6px 0}
+/* genie */
+.genie{background:var(--genie);border:1px solid var(--line);border-radius:12px;display:flex;flex-direction:column;min-height:0;height:calc(100vh - 92px);position:sticky;top:14px}
+.ghead{padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.ghead h2{font-size:16px;display:flex;align-items:center;gap:8px}
+.gmark{width:22px;height:22px;border-radius:6px;background:var(--ink);color:var(--paper);font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+.ghead p{font-size:12.5px;color:var(--slate);margin-top:3px}
+.msgs{flex:1;overflow:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:92%;font-size:13.5px;border-radius:12px;padding:9px 12px}
+.msg.u{align-self:flex-end;background:var(--ink);color:var(--paper);border-bottom-right-radius:4px}
+.msg.g{align-self:flex-start;background:var(--bubble);border:1px solid var(--line);border-bottom-left-radius:4px}
+.msg.g ul{margin:6px 0 2px 16px}
+.msg.g .acts{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.msg.g .acts button{font-size:12px;font-weight:600;color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:3px 9px;cursor:pointer}
+.msg.g pre{display:none;margin-top:8px;font-size:11.5px;background:var(--soft);border-radius:6px;padding:7px 8px;white-space:pre-wrap;font-family:ui-monospace,Menlo,Consolas,monospace}
+.msg.g pre.on{display:block}
+.msg.g .src{display:block;font-size:11px;color:var(--mist);margin-top:6px}
+.gfoot{padding:10px 12px 12px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+.sugs{display:flex;flex-wrap:wrap;gap:6px}
+.sugs button{font-size:12px;color:var(--slate);background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px 10px;cursor:pointer;text-align:left}
+.inrow{display:flex;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 6px 6px 12px}
+.inrow input{flex:1;border:none;background:transparent;color:var(--ink);font-size:14px;outline:none;min-width:0}
+.inrow button{font-weight:700;font-size:13px;color:#fff;background:var(--ink);border:none;border-radius:7px;padding:6px 14px;cursor:pointer}
+footer{grid-column:1 / -1;font-size:11px;color:var(--mist);line-height:1.45}
+dialog{margin:auto;border:none;border-radius:12px;padding:0;max-width:620px;width:calc(100% - 32px);background:var(--card);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.35)}
+dialog::backdrop{background:rgba(10,20,25,.45)}
+.doc{padding:26px 30px}
+.doc .meta{font-size:12px;color:var(--mist)} .doc h2{font-size:21px;margin:4px 0 12px}
+.doc h4{font-size:13.5px;margin:12px 0 4px} .doc p,.doc li{font-size:13.5px} .doc ul{padding-left:18px}
+.doc .tag{font-size:11.5px;color:var(--slate);border:1.2px dashed var(--mist);border-radius:6px;padding:4px 8px;display:inline-block;margin-top:14px}
+.doc .close{float:right;font-weight:600;font-size:12px;background:none;border:1px solid var(--line);border-radius:6px;padding:3px 8px;cursor:pointer;color:var(--slate)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn,:root:not([data-theme="light"]) .inrow button{background:var(--lava)}
+  :root:not([data-theme="light"]) .tog[aria-checked="true"]{background:var(--lava)} :root:not([data-theme="light"]) .rec{border-color:var(--slate);box-shadow:6px 6px 0 #000}}
+@media (max-width:1180px){.page{grid-template-columns:1fr}.genie{position:static;height:auto;max-height:640px}.filters{grid-template-columns:1fr 1fr}.f.yrbox{grid-column:1 / -1}}
+@media (max-width:760px){.grid2{grid-template-columns:1fr}.kpis{grid-template-columns:1fr}.filters{grid-template-columns:1fr}.nav,.who span{display:none}.page{padding:12px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head>
+<body>
+<div class="disc" id="disc" role="note">
+  <h2>This is a concept prototype, not a working product</h2>
+  <p>Every number here is <b>illustrative</b>, produced by a toy model for the DAISI Challenge 2026 Round 1. A lot of it does not work yet:</p>
+  <ul>
+    <li><b>Genie</b> only answers the four suggested questions. Anything else gets a placeholder reply.</li>
+    <li><b>Nursing homes</b>, <b>Saved briefs</b> and <b>Data and method</b> are not built.</li>
+    <li>The <b>forecast range</b> is a stand-in. In the real build it comes from the machine-learning model's uncertainty range, and suggested sites recalculate for it.</li>
+    <li>The <b>ML forecast</b> itself is not trained yet. It will be tested against the standard demographic method during the sprint.</li>
+    <li>The <b>planning brief</b> is a fixed template, not written by AI.</li>
+    <li><b>Clinic locations</b> on the map are approximate, and areas without HDB survey data are left blank.</li>
+  </ul>
+  <p>The real version would run on Databricks with real data. Please don't quote these figures.</p>
+</div>
+<header class="appbar">
+  <div class="logo"><i></i>CareRunway</div>
+  <nav class="nav" aria-label="Sections"><span class="on">Planner dashboard</span><span class="nb" title="Not built yet">Saved briefs</span><span class="nb" title="Not built yet">Data and method</span></nav>
+  <div class="bar-r"><span class="proto">Prototype, illustrative data</span><span class="who"><b>RP</b><span>Regional planner</span></span></div>
+</header>
+<div class="page">
+<section class="dash" aria-label="Dashboard">
+  <div class="filters">
+    <div class="f"><label for="care">Type of care</label>
+      <select id="care"><option>GPs and polyclinics</option><option disabled>Nursing homes (coming soon)</option></select></div>
+    <div class="f"><label for="region">Region</label>
+      <select id="region"><option value="">All of Singapore</option><option>North</option><option>North-East</option><option>East</option><option>West</option><option>Central</option></select></div>
+    <div class="f"><label for="outlook">Forecast range (ML model)</label>
+      <select id="outlook"><option value="0.6">Low end</option><option value="1" selected>Expected</option><option value="1.4">High end</option></select></div>
+    <div class="f yrbox"><label for="year">Year to show on the map</label>
+      <div class="yr"><em>2026</em><input id="year" type="range" min="2026" max="2031" step="1" value="2031"><strong id="yearOut">2031</strong></div></div>
+    <div class="f sw"><div><span class="lab">Include clinics MOH has announced</span><span class="val" id="swLab">Yes</span></div>
+      <button class="tog" id="planned" role="switch" aria-checked="true" aria-label="Include clinics MOH has announced"></button></div>
+  </div>
+  <div class="banner" id="banner"></div>
+  <div class="grid2">
+    <section class="card mapcard" aria-label="Map">
+      <h2>Where and when will seniors be under-served?</h2>
+      <p class="sum" id="summary"></p>
+      <svg class="map" id="map" role="img" aria-label="Map of Singapore planning areas"></svg>
+      <div class="tip" id="tip"></div>
+      <div class="keys">
+        <div class="row" id="ramp"><em>Under-served from</em></div>
+        <div class="row"><span><i class="pin" style="border:1.8px solid var(--ink);background:var(--card)"></i>Polyclinic today</span>
+          <span><i class="pin" style="background:var(--ink)"></i>Announced</span><span><i class="pin" style="border:1.6px dashed var(--ink)"></i>Announced, delayed</span>
+          <span><i class="pin" style="background:var(--lava)"></i>Suggested next clinic (numbered)</span></div>
+        <div class="def" id="def"></div>
+      </div>
+      <div class="hint">Click an area on the map, or any row on the right, to see it here.</div>
+      <div class="area" id="area" aria-live="polite"></div>
+    </section>
+    <div class="side">
+      <section class="card rec" aria-label="Best place for the next clinic">
+        <h2>Where should the next clinic go?</h2>
+        <p class="sub">If one clinic opened in 2028, these areas would gain the most.</p>
+        <table class="recs" id="recs"></table>
+        <p class="why" id="why"></p>
+        <p class="note" id="recNote"></p>
+        <div class="briefrow"><button class="btn" id="briefBtn">Draft planning brief</button><span class="mini" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="bcap">One page, written from these numbers</span></div>
+      </section>
+      <section class="card chk" aria-label="Announced clinics">
+        <div class="hrow"><h2>Will MOH's announced clinics arrive in time?</h2><span class="latec" id="latec"></span></div>
+        <table id="chk"></table>
+      </section>
+    </div>
+  </div>
+</section>
+<aside class="genie" aria-label="Ask Genie">
+  <div class="ghead"><h2><span class="gmark">G</span>Ask Genie</h2>
+    <p>Ask follow-up questions in plain English. Genie answers from CareRunway's data and can update the map.</p></div>
+  <div class="msgs" id="msgs" aria-live="polite"></div>
+  <div class="gfoot">
+    <div class="sugs" id="sugs"></div>
+    <div class="inrow"><input id="q" placeholder="Ask a question about seniors, clinics or areas" aria-label="Your question"><button id="askBtn">Ask</button></div>
+  </div>
+</aside>
+<footer>Clickable concept prototype for the DAISI Challenge 2026 (problem A3). Values are illustrative: the ML forecast is not trained yet, and a toy supply model calibrated near the real national figure of 293 seniors per clinic (2022). Population: HDB Sample Household Survey 2018, town labels corrected. Announced clinics: MOH, 2026; locations approximate. Boundaries: URA Master Plan 2019. Areas without HDB survey data are left blank. Genie here answers a set of questions from the prototype's data; in the full build it writes SQL over our Databricks tables.</footer>
+</div>
+<dialog id="brief"><div class="doc" id="doc"></div></dialog>
+<script>
+const D = __DATA__;
+if (location.hash === '#clean') document.body.classList.add('clean');
+const $ = id => document.getElementById(id);
+const COLORS = {Now:'var(--c26)',2027:'var(--c27)',2028:'var(--c28)',2029:'var(--c29)',2030:'var(--c30)',2031:'var(--c31)'};
+const state = {year:2031, planned:true, region:'', k:1, sel:'Jurong West'};
+const YI = y => D.years.indexOf(y);
+const towns = Object.keys(D.towns);
+const fmt = n => n.toLocaleString('en-SG');
+
+function series(t, planned = state.planned){
+  const base = D.towns[t][planned ? 'on' : 'off'], i26 = YI(2026);
+  return base.map((v,i) => i <= i26 ? v : Math.round(base[i26] + (v - base[i26]) * state.k));
+}
+function firstYear(t, planned = state.planned){
+  const s = series(t, planned);
+  if (s[YI(2026)] >= D.line) return 'Now';
+  for (let y = 2027; y <= 2031; y++) if (s[YI(y)] >= D.line) return y;
+  return null;
+}
+const byYear = (t, planned = state.planned) => { const f = firstYear(t, planned); if (f === null) return null; return (f === 'Now' ? 2026 : f) <= state.year ? f : null; };
+const inRegion = t => !state.region || D.areas.some(a => a.town === t && a.region === state.region);
+const underServed = (planned = state.planned) => towns.filter(t => inRegion(t) && byYear(t, planned) !== null);
+
+// ---------- map ----------
+const NS = 'http://www.w3.org/2000/svg', svg = $('map');
+svg.setAttribute('viewBox', `0 0 ${D.W} ${D.H}`);
+svg.innerHTML = `<defs><pattern id="nd" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="5" height="5" fill="var(--nd1)"/><rect width="1.1" height="5" fill="var(--nd2)"/></pattern></defs>`;
+const paths = D.areas.map(a => {
+  const p = document.createElementNS(NS, 'path');
+  p.setAttribute('d', a.d); p.setAttribute('class', 'a'); p.setAttribute('fill-rule', 'evenodd');
+  if (a.town) { p.setAttribute('tabindex', '0'); p.setAttribute('aria-label', a.pa); }
+  p.__a = a; svg.appendChild(p); return p;
+});
+const coast = document.createElementNS(NS, 'path');
+coast.setAttribute('d', D.coast); coast.setAttribute('fill', 'none'); coast.setAttribute('stroke', 'var(--coast)');
+coast.setAttribute('stroke-width', '1.1'); coast.setAttribute('stroke-linejoin', 'round'); coast.style.pointerEvents = 'none';
+svg.appendChild(coast);
+function dot(x, y, r, fill, stroke, sw, dash){
+  const c = document.createElementNS(NS, 'circle');
+  Object.entries({cx:x, cy:y, r, fill, stroke, 'stroke-width':sw}).forEach(([k,v]) => c.setAttribute(k, v));
+  if (dash) c.setAttribute('stroke-dasharray', dash); c.style.pointerEvents = 'none'; return c;
+}
+const L1 = document.createElementNS(NS,'g'), L2 = document.createElementNS(NS,'g'), L3 = document.createElementNS(NS,'g');
+svg.append(L1, L2, L3);
+D.existing.forEach(([x,y]) => L1.appendChild(dot(x, y, 4.2, 'var(--card)', 'var(--ink)', 1.8)));
+L1.appendChild(dot(D.delayed[0], D.delayed[1], 6.5, 'var(--card)', 'var(--ink)', 1.8, '3 2.2'));
+D.planned.forEach(p => L2.appendChild(dot(p.xy[0], p.xy[1], 6, 'var(--ink)', 'var(--card)', 2)));
+[['Now','Already'],[2027,'2027'],[2028,'2028'],[2029,'2029'],[2030,'2030'],[2031,'2031'],['later','Not yet'],['nd','No data in prototype']].forEach(([k,l]) => {
+  const s = document.createElement('span');
+  const fill = k === 'later' ? 'var(--later)' : k === 'nd' ? 'repeating-linear-gradient(45deg,var(--nd2) 0 1.2px,var(--nd1) 1.2px 3.5px)' : COLORS[k];
+  s.innerHTML = `<b style="background:${fill}${k==='nd'?';border:1px solid var(--line)':''}"></b>${l}`; $('ramp').appendChild(s);
+});
+$('def').textContent = `Under-served means more than ${D.line} seniors per clinic, the level today's most stretched quarter of areas already face. Forecasts come from a machine-learning model, checked against the standard demographic method.`;
+
+// ---------- next clinic ----------
+function whyNot(recs){
+  const s31 = t => series(t)[YI(2031)];
+  const worst = towns.filter(inRegion).sort((a,b) => s31(b) - s31(a))[0];
+  if (!worst || recs.some(r => r.town === worst) || s31(worst) < D.line) return '';
+  const n = Math.ceil(Math.log(s31(worst) / D.line) / Math.log(D.mult));
+  return `<b>Why not ${worst}?</b> It is the most stretched area, but it would need about ${n} new clinics to get back under the line. One clinic does more good where it tips an area back.`;
+}
+
+function render(){
+  paths.forEach(p => {
+    const a = p.__a; let fill = 'url(#nd)';
+    if (a.town) { const st = byYear(a.town); fill = st === null ? 'var(--later)' : COLORS[st]; }
+    p.setAttribute('fill', fill);
+    p.classList.toggle('dim', !!state.region && a.region !== state.region);
+    p.classList.toggle('sel', state.sel === a.pa);
+  });
+  L2.style.display = state.planned ? '' : 'none';
+  const us = underServed(), where = state.region ? ` in the ${state.region}` : '';
+  const alt = underServed(!state.planned).length;
+  const seniors = fmt(us.reduce((s,t) => s + D.towns[t].seniors[YI(state.year)], 0));
+  $('summary').innerHTML = `By ${state.year}, <b class="r">${us.length} areas</b>${where} will be under-served, home to <b>${seniors} seniors</b>.` +
+    (state.planned && alt > us.length ? ` Without MOH's announced clinics it would be ${alt}.` : '');
+  const late = D.checks.filter(c => /late|hurts/.test(c.verdict)).length;
+  $('latec').textContent = state.planned && late ? `${late} late` : ''; $('latec').style.display = state.planned && late ? '' : 'none';
+  $('banner').classList.toggle('on', !state.planned);
+  $('banner').innerHTML = `<b>Showing Singapore without MOH's announced clinics.</b> ${us.length} areas would be under-served by ${state.year}, versus ${alt} if they open as planned. The suggested sites below change to match.`;
+  $('yearOut').textContent = state.year; $('swLab').textContent = state.planned ? 'Yes' : 'No';
+  const recs = D.recs[state.planned ? 'on' : 'off'];
+  const NOTES = {'Jurong West': state.planned ? 'or bring Taman Jurong forward from 2030' : 'no new clinic counted here', 'Hougang':'no new clinic announced',
+    'Choa Chu Kang':'a second site after Yew Tee', 'Bedok':'Kaki Bukit would cover this if counted'};
+  $('recs').innerHTML = recs.map((r,i) => `<tr data-t="${r.town}" class="${state.sel===r.town?'on':''}"><td class="n"><i>${i+1}</i></td><td class="a"><b>${r.town}</b><small>${NOTES[r.town]||''}</small></td>
+    <td class="m"><b>${fmt(r.seniors)} seniors</b><small>kept adequately served for ${r.years} more years</small></td></tr>`).join('');
+  L3.innerHTML = '';
+  recs.forEach((r,i) => { const xy = D.recxy[r.town]; if (!xy) return;
+    L3.appendChild(dot(xy[0], xy[1], 10, 'var(--lava)', 'var(--card)', 2.2));
+    const t = document.createElementNS(NS,'text'); t.setAttribute('x', xy[0]); t.setAttribute('y', xy[1]+4.3); t.setAttribute('text-anchor','middle');
+    t.setAttribute('style','font:700 12px DM Sans,sans-serif;fill:#fff;pointer-events:none'); t.textContent = i+1; L3.appendChild(t); });
+  const w = whyNot(recs); $('why').innerHTML = w; $('why').style.display = w ? '' : 'none';
+  $('recNote').textContent = state.k !== 1 ? 'Suggested sites shown for the expected forecast. The full build recalculates them across the forecast range.' : '';
+  const cls = v => /late|hurts/.test(v) ? 'c-bad' : (/On target|Buys/.test(v) ? 'c-good' : 'c-mid');
+  $('chk').innerHTML = state.planned
+    ? `<tr class="hd"><td>Announced polyclinic</td><td>Opens</td><td class="r">Verdict</td></tr>` + D.checks.map(c => `<tr class="r1 ${state.sel===c.town?'on':''}" data-t="${c.town}"><td><b style="font-weight:600">${c.site}</b> <span style="color:var(--mist);font-size:11.5px">${c.town}</span></td><td>${c.opens}</td><td class="r"><span class="chip ${cls(c.verdict)}">${c.verdict}</span></td></tr>`).join('')
+    : `<tr><td class="empty">Switch "Include clinics MOH has announced" back to Yes to check whether each one arrives in time.</td></tr>`;
+  document.querySelectorAll('#recs tr[data-t], #chk tr[data-t]').forEach(r => r.onclick = () => { state.sel = r.dataset.t; render(); });
+  renderArea();
+}
+function renderArea(){
+  const box = $('area'), a = D.areas.find(x => x.pa === state.sel);
+  if (!a || !a.town) { box.innerHTML = ''; return; }
+  const s = series(a.town), f = firstYear(a.town);
+  const st = f === 'Now' ? ['Under-served now', 'background:var(--c26);color:#fff'] : f === null ? ['Not under-served by 2031', 'background:var(--later);color:var(--ink)'] : [`Under-served from ${f}`, `background:${COLORS[f]};color:${+f<=2028?'#fff':'var(--ink)'}`];
+  const W = 250, H = 104, L = 22, R = 34, T = 24, B = 18;
+  const lo = Math.min(...s, D.line) - 12, hi = Math.max(...s, D.line) + 12;
+  const X = i => L + i * (W - L - R) / (s.length - 1), Y = v => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
+  const i26 = YI(2026), iy = YI(state.year);
+  const chk = D.checks.find(c => c.town === a.town);
+  const recs = D.recs[state.planned ? 'on' : 'off'], ri = recs.findIndex(r => r.town === a.town);
+  const oy = chk && /^\d{4}$/.test(chk.opens) && state.planned ? YI(+chk.opens) : -1;
+  box.innerHTML = `
+    <div><h3>${a.pa}</h3><span class="status" style="${st[1]}">${st[0]}</span>
+      <div class="facts" style="margin-top:10px">
+        <span class="lbl">Announced here</span><p>${chk ? `${chk.site} polyclinic, opens ${chk.opens}: ${chk.verdict.toLowerCase()}` : 'No new clinic announced'}</p>
+        <span class="lbl">Next clinic</span><p>${ri >= 0 ? `Suggested site #${ri+1} (see right)` : 'Not one of the top 3 suggested sites'}</p>
+      </div></div>
+    <div><span class="lbl">Seniors per clinic, 2025 to 2031</span>
+      <svg width="${W}" height="${H}" role="img" aria-label="Seniors per clinic in ${a.pa}">
+        <line x1="${L}" x2="${W-R}" y1="${Y(D.line)}" y2="${Y(D.line)}" stroke="var(--ink)" stroke-dasharray="4 3"/>
+        <text x="${W-R+4}" y="${Y(D.line)+4}" style="font-size:10.5px;fill:var(--ink)">${D.line}</text>
+        ${oy >= 0 ? `<line x1="${X(oy)}" x2="${X(oy)}" y1="${T-6}" y2="${H-B}" stroke="var(--mist)" stroke-dasharray="2 2"/><text x="${X(oy)}" y="${T-7}" text-anchor="middle" style="font-size:10px;fill:var(--slate)">${chk.site} opens</text>` : ''}
+        <polyline points="${s.map((v,i)=>`${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ')}" fill="none" stroke="var(--lava)" stroke-width="2.4"/>
+        <circle cx="${X(i26)}" cy="${Y(s[i26])}" r="3.5" fill="var(--card)" stroke="var(--lava)" stroke-width="2"/>
+        <text x="${X(i26)}" y="${Y(s[i26]) + 15}" text-anchor="middle" style="font-size:11px;font-weight:700;fill:var(--ink)">${s[i26]}</text>
+        <circle cx="${X(iy)}" cy="${Y(s[iy])}" r="3.5" fill="var(--lava)"/>
+        <text x="${X(iy)}" y="${Y(s[iy]) - 7}" text-anchor="middle" style="font-size:11px;font-weight:700;fill:var(--lava)">${s[iy]}</text>
+        <text x="${L}" y="${H-3}" style="font-size:10.5px;fill:var(--mist)">2025</text>
+        <text x="${W-R}" y="${H-3}" text-anchor="end" style="font-size:10.5px;fill:var(--mist)">2031</text>
+      </svg>
+      <span class="lbl">Dashed line: under-served above ${D.line}</span></div>`;
+}
+const tip = $('tip'), mapcard = document.querySelector('.mapcard');
+paths.forEach(p => {
+  const a = p.__a;
+  p.addEventListener('mousemove', e => {
+    const r = mapcard.getBoundingClientRect();
+    if (!a.town) tip.innerHTML = `<b>${a.pa}</b>No HDB survey data in this prototype`;
+    else { const s = series(a.town), f = firstYear(a.town);
+      tip.innerHTML = `<b>${a.pa}</b>${s[YI(state.year)]} seniors per clinic in ${state.year}<br>Under-served from: ${f === null ? 'not by 2031' : f === 'Now' ? 'already' : f}`; }
+    tip.style.display = 'block';
+    tip.style.left = Math.min(e.clientX - r.left + 12, r.width - 240) + 'px'; tip.style.top = (e.clientY - r.top + 12) + 'px';
+  });
+  p.addEventListener('mouseleave', () => tip.style.display = 'none');
+  const pick = () => { if (!a.town) return; state.sel = state.sel === a.pa ? null : a.pa; render(); };
+  p.addEventListener('click', pick);
+  p.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+});
+$('year').addEventListener('input', e => { state.year = +e.target.value; render(); });
+$('planned').addEventListener('click', e => { state.planned = !state.planned; e.currentTarget.setAttribute('aria-checked', state.planned); render(); });
+$('region').addEventListener('change', e => { state.region = e.target.value; render(); });
+$('outlook').addEventListener('change', e => { state.k = +e.target.value; render(); });
+
+// ---------- Genie ----------
+const msgs = [];
+const SQL = {
+  north: "SELECT area, under_served_from\nFROM workspace.carerunway.gold_area_year\nWHERE region = 'North' AND scenario = 'expected'\n  AND under_served_from < 2029\nORDER BY under_served_from;",
+  cck: "SELECT year, seniors_per_clinic, under_served_line\nFROM workspace.carerunway.gold_area_year\nWHERE area = 'Choa Chu Kang' AND planned_included\nORDER BY year;",
+  next: "SELECT area, seniors_kept_served, years_gained\nFROM workspace.carerunway.gold_next_clinic\nWHERE open_year = 2028\nORDER BY seniors_kept_served * years_gained DESC\nLIMIT 3;",
+  late: "SELECT site, area, opens, verdict\nFROM workspace.carerunway.gold_planned_check\nWHERE verdict LIKE '%late%';"
+};
+function reply(q){
+  q = q.toLowerCase();
+  if (/north/.test(q)) {
+    const list = towns.filter(t => D.areas.some(a => a.town === t && a.region === 'North')).filter(t => { const f = firstYear(t); return f !== null && (f === 'Now' || f < 2029); });
+    return {html: list.length ? `${list.length} areas in the North become under-served before 2029:<ul>${list.map(t => `<li>${t}: ${firstYear(t) === 'Now' ? 'already' : firstYear(t)}</li>`).join('')}</ul>` : 'None, under the current settings.',
+      act: {label:'Show North on map', fn: () => { state.region = 'North'; $('region').value = 'North'; render(); }}, sql: SQL.north};
+  }
+  if (/yew tee|choa chu kang/.test(q)) {
+    const s = series('Choa Chu Kang', true);
+    return {html: `Yew Tee polyclinic opens in 2027 and brings Choa Chu Kang down to ${s[YI(2027)]} seniors per clinic, just under the line of ${D.line}. By 2028 it is back up to ${s[YI(2028)]}, so it buys about one year. That is why Choa Chu Kang still ranks for a second clinic.`,
+      act: {label:'Open Choa Chu Kang', fn: () => { state.sel = 'Choa Chu Kang'; render(); }}, sql: SQL.cck};
+  }
+  if (/late|arrive|delay/.test(q)) {
+    const late = D.checks.filter(c => /late|hurts/.test(c.verdict));
+    return {html: late.length ? late.map(c => `${c.site} (${c.town}), opening ${c.opens}: ${c.verdict.toLowerCase()}. The area is already under-served and still over the line when it opens.`).join(' ') : 'None are late under the current settings.', sql: SQL.late};
+  }
+  if (/next clinic|new clinic|help most|where should/.test(q)) {
+    const r = D.recs[state.planned ? 'on' : 'off'][0];
+    return {html: `${r.town}. One clinic opening there in 2028 keeps about ${fmt(r.seniors)} seniors adequately served for ${r.years} more years, the most of any area.`,
+      act: {label:'Draft planning brief', fn: openBrief}, sql: SQL.next};
+  }
+  return {html: 'In this prototype I can answer questions about under-served areas, the next clinic, Choa Chu Kang and Yew Tee, and late clinics. In the full build, Genie writes SQL over CareRunway\'s tables to answer anything else.'};
+}
+function ask(q){
+  if (!q.trim()) return;
+  msgs.push({u:q}); msgs.push({g:reply(q)}); drawMsgs(); drawSugs(); $('q').value = '';
+}
+function drawMsgs(){
+  const box = $('msgs'); box.innerHTML = '';
+  msgs.forEach((m, i) => {
+    const d = document.createElement('div');
+    if (m.u) { d.className = 'msg u'; d.textContent = m.u; }
+    else {
+      d.className = 'msg g';
+      d.innerHTML = `${m.g.html}<span class="src">From CareRunway's data (illustrative in this prototype)</span>
+        <div class="acts">${m.g.act ? `<button data-a="${i}">${m.g.act.label}</button>` : ''}${m.g.sql ? `<button data-s="${i}">View SQL</button>` : ''}</div>
+        ${m.g.sql ? `<pre id="sql${i}">${m.g.sql}</pre>` : ''}`;
+    }
+    box.appendChild(d);
+  });
+  box.querySelectorAll('[data-a]').forEach(b => b.onclick = () => msgs[+b.dataset.a].g.act.fn());
+  box.querySelectorAll('[data-s]').forEach(b => b.onclick = () => $('sql' + b.dataset.s).classList.toggle('on'));
+  box.scrollTop = box.scrollHeight;
+}
+const SUGS = ['Which areas in the North become under-served before 2029?', 'Why does Choa Chu Kang still need a clinic if Yew Tee opens in 2027?', 'Where should the next clinic go?', 'Which announced clinics arrive late?'];
+function drawSugs(){ const asked = msgs.filter(m => m.u).map(m => m.u);
+  $('sugs').innerHTML = SUGS.filter(s => !asked.includes(s)).map(s => `<button>${s}</button>`).join('');
+  $('sugs').querySelectorAll('button').forEach(b => b.onclick = () => ask(b.textContent)); }
+$('askBtn').onclick = () => ask($('q').value);
+$('q').addEventListener('keydown', e => { if (e.key === 'Enter') ask($('q').value); });
+
+// ---------- brief ----------
+function openBrief(){
+  const r = D.recs[state.planned ? 'on' : 'off'][0], t = D.towns[r.town], s = series(r.town);
+  const chk = D.checks.find(c => c.town === r.town);
+  $('doc').innerHTML = `<button class="close" onclick="document.getElementById('brief').close()">Close</button>
+    <div class="meta">CareRunway planning brief</div><h2>${r.town}: case for a new clinic in 2028</h2>
+    <h4>Situation</h4><p>${r.town} has about ${s[YI(2026)]} seniors per clinic in 2026, against an under-served line of ${D.line}. Without new supply it reaches ${s[YI(2031)]} by 2031, as its senior population grows from about ${fmt(t.seniors26)} to ${fmt(t.seniors31)}.</p>
+    <h4>Recommendation</h4><p>Open one clinic in 2028. It keeps about ${fmt(r.seniors)} seniors adequately served for ${r.years} more years, the largest gain of any area for a single clinic.</p>
+    ${chk ? `<h4>Announced clinics</h4><p>${chk.site} polyclinic (${chk.opens}): ${chk.verdict.toLowerCase()}. Bringing it forward is an alternative to a new site.</p>` : ''}
+    <h4>Caveats</h4><ul><li>Supply counts existing and announced clinics only.</li><li>Forecast: ${['low end of the range','expected','high end of the range'][[0.6,1,1.4].indexOf(state.k)]}.</li></ul>
+    <span class="tag">Prototype brief built from a template. In the full build an AI model writes it from the same numbers, and every figure comes from our tables.</span>`;
+  $('brief').showModal();
+}
+$('briefBtn').onclick = openBrief;
+
+// opening conversation so the panel shows how Genie is used
+ask(SUGS[0]); ask(SUGS[1]);
+render();
+</script>
+</body></html>
